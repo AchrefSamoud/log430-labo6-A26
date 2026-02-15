@@ -34,17 +34,15 @@ class CreatePaymentHandler(Handler):
             response_ok = True
             if response_ok:
                 self.logger.debug("La création d'une transaction de paiement a réussi")
-                return OrderSagaState.COMPLETED
+                return OrderSagaState.PAYMENT_CREATED
             else:
                 self.logger.error(f"Erreur : {response_ok}")
-                return OrderSagaState.INCREASING_STOCK
+                return self.rollback()
 
         except Exception as e:
             self.logger.error("La création d'une transaction de paiement a échoué : " + str(e))
-            return OrderSagaState.INCREASING_STOCK
+            return self.rollback()
         
     def rollback(self):
-        """Call payment microservice to delete payment transaction"""
-        # ATTENTION: Nous pourrions utiliser cette méthode si nous avions des étapes supplémentaires, mais ce n'est pas le cas actuellement, elle restera donc INUTILISÉE.
-        self.logger.debug("La suppression d'une transaction de paiement a réussi")
-        return OrderSagaState.INCREASING_STOCK
+        # TODO: increase the stock
+        return OrderSagaState.STOCK_INCREASED

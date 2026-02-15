@@ -30,17 +30,15 @@ class DecreaseStockHandler(Handler):
             response_ok = True
             if response_ok:
                 self.logger.debug("La sortie des articles du stock a réussi")
-                return OrderSagaState.CREATING_PAYMENT
+                return OrderSagaState.STOCK_DECREASED
             else:
                 self.logger.error(f"Erreur : {response_ok}")
-                return OrderSagaState.CANCELLING_ORDER
+                return self.rollback()
             
         except Exception as e:
             self.logger.error("La sortie des articles du stock a échoué : " + str(e))
-            return OrderSagaState.CANCELLING_ORDER
+            return self.rollback()
         
     def rollback(self):
-        """ Call StoreManager to revert stock check out (in other words, check-in the previously checked-out product and quantity) """
-        # TODO: effectuer une requête à /stocks pour modifier le stock
-        self.logger.debug("L'entrée des articles dans le stock a réussi")
-        return OrderSagaState.CANCELLING_ORDER
+        # TODO: delete the order
+        return OrderSagaState.ORDER_DELETED

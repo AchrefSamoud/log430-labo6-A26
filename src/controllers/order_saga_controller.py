@@ -4,8 +4,8 @@ SPDX - License - Identifier: LGPL - 3.0 - or -later
 Auteurs : Gabriel C. Ullmann, Fabio Petrillo, 2025
 """
 from handlers.create_order_handler import CreateOrderHandler
-from handlers.create_payment_handler import CreatePaymentHandler
 from handlers.decrease_stock_handler import DecreaseStockHandler
+from handlers.create_payment_handler import CreatePaymentHandler
 from controllers.controller import Controller
 from order_saga_state import OrderSagaState
 
@@ -19,8 +19,8 @@ class OrderSagaController(Controller):
         """ Constructor method """
         super().__init__()
         # NOTE: veuillez lire le commentaire de ce classe pour mieux comprendre les limitations de ce implémentation
-        self.current_saga_state = OrderSagaState.CREATING_ORDER
-    
+        self.current_saga_state = OrderSagaState.START
+
     def run(self, request):
         """ Perform steps of order saga """
         payload = request.get_json() or {}
@@ -30,17 +30,26 @@ class OrderSagaController(Controller):
         }
         self.create_order_handler = CreateOrderHandler(order_data)
 
-        while self.current_saga_state is not OrderSagaState.COMPLETED:
-            # TODO: vérifier TOUS les 6 états saga. Utilisez run() ou rollback() selon les besoins.
-            if self.current_saga_state == OrderSagaState.CREATING_ORDER:
+        while self.current_saga_state is not OrderSagaState.END:
+            # TODO: Utilisez run() ou rollback() selon les besoins.
+            if self.current_saga_state == OrderSagaState.START:
                 self.current_saga_state = self.create_order_handler.run()
-            elif self.current_saga_state == OrderSagaState.DECREASING_STOCK:
-                self.increase_stock_handler = DecreaseStockHandler(order_data["items"])
-                self.current_saga_state = self.increase_stock_handler.run()
+            elif self.current_saga_state == OrderSagaState.ORDER_CREATED:
+                self.decrease_stock_handler = DecreaseStockHandler(order_data['items'])
+                self.current_saga_state = self.decrease_stock_handler.run()
+            elif self.current_saga_state == OrderSagaState.STOCK_DECREASED:
+                order_id = self.create_order_handler.order_id
+                self.create_payment_handler = CreatePaymentHandler(order_id, order_data)
+                self.current_saga_state = self.create_payment_handler.run()
+            elif self.current_saga_state == OrderSagaState.STOCK_INCREASED:
+                pass # delete order with delete_order_handler(order_id)
+                self.current_saga_state = OrderSagaState.ORDER_DELETED
+            elif self.current_saga_state is OrderSagaState.PAYMENT_CREATED or self.current_saga_state is OrderSagaState.ORDER_DELETED:
+                self.current_saga_state = OrderSagaState.END
             else:
                 self.is_error_occurred = True
                 self.logger.debug(f"L'état saga n'est pas valide : {self.current_saga_state}")
-                self.current_saga_state = OrderSagaState.COMPLETED
+                self.current_saga_state = OrderSagaState.END
 
         return {
             "order_id": self.create_order_handler.order_id,

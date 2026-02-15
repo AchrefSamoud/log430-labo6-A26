@@ -8,9 +8,10 @@ from enum import Enum
 
 # TODO: Veuillez consulter le diagramme de machine à états pour en savoir plus
 class OrderSagaState(Enum):
-    CREATING_ORDER = 1
-    DECREASING_STOCK = 2
-    CREATING_PAYMENT = 3
-    INCREASING_STOCK = 4
-    CANCELLING_ORDER = 5
-    COMPLETED = 6
+    START = 0
+    ORDER_CREATED = 1
+    STOCK_DECREASED = 2
+    PAYMENT_CREATED = 3
+    STOCK_INCREASED = 4
+    ORDER_DELETED = 5
+    END = 6
