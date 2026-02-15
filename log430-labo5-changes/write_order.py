@@ -99,11 +99,11 @@ def modify_order(order_id: int, is_paid: bool, payment_id: int):
         return True
     except SQLAlchemyError as e:
         session.rollback()
-        print(e)
+        logger.debug(e)
         return False
     except Exception as e:
         session.rollback()
-        print(e)
+        logger.debug(e)
         return False
     finally:
         session.close()
