@@ -5,9 +5,9 @@
 4 : STOCK_INCREASED
 5 : ORDER_DELETED
 
-[*] --> 1 : NewOrder
+[*] --> 1 : CreateOrder
 1 --> 2 : DecreaseStock
-1 --> 5 : DecreaseStockFailure
+1 -> 5 : DecreaseStockFailure
 
 2 --> 3 : CreatePayment
 2 --> 4 : CreatePaymentFailure
