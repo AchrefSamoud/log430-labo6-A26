@@ -41,5 +41,5 @@ class CreateOrderHandler(Handler):
             return OrderSagaState.END
         
     def rollback(self):
-        # In this case, it will be unsued bc there are no previous operations
+        # In this case, it will be unused bc there are no previous operations
         pass
