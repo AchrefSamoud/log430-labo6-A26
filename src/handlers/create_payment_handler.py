@@ -31,18 +31,17 @@ class CreatePaymentHandler(Handler):
             POST my-api-gateway-address/payments ...
             json={ voir collection Postman pour en savoir plus ... }
             """
-            response_ok = True
+            response_ok = False
             if response_ok:
-                self.logger.debug("La création d'une transaction de paiement a réussi")
+                self.logger.debug("Transition d'état: CreatePayment -> PAYMENT_CREATED")
                 return OrderSagaState.PAYMENT_CREATED
             else:
-                self.logger.error(f"Erreur : {response_ok}")
                 return self.rollback()
 
-        except Exception as e:
-            self.logger.error("La création d'une transaction de paiement a échoué : " + str(e))
+        except Exception:
             return self.rollback()
         
     def rollback(self):
-        # TODO: increase the stock
+        # TODO: remettre en stock tous les articles qui avaient été retirés du stock (dans self.order_data)
+        self.logger.debug("Transition d'état: CreatePaymentFailure -> STOCK_INCREASED")
         return OrderSagaState.STOCK_INCREASED

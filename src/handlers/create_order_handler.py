@@ -29,17 +29,20 @@ class CreateOrderHandler(Handler):
             if response.ok:
                 data = response.json() 
                 self.order_id = data['order_id'] if data else 0
-                self.logger.debug("La création de la commande a réussi")
+                self.logger.debug("Transition d'état: CreateOrder -> ORDER_CREATED")
                 return OrderSagaState.ORDER_CREATED
             else:
                 text = response.json() 
-                self.logger.error(f"Erreur {response.status_code} : {text}")
+                self.logger.error(f"CreateOrder a échoué : {response.status_code} - {text}")
                 return OrderSagaState.END
 
         except Exception as e:
-            self.logger.error("La création de la commande a échoué : " + str(e))
+            self.logger.error("CreateOrder a échoué : " + str(e))
             return OrderSagaState.END
         
     def rollback(self):
-        # In this case, it will be unused bc there are no previous operations
+        """
+        Une compensation n'est pas nécessaire car la commande n'a pas été créée. Il n'y a donc rien à compenser. 
+        Cependant, nous héritons de la classe abstraite Handler, et par conséquent, l'implémentation de la méthode rollback() est obligatoire.
+        """
         pass
