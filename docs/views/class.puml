@@ -13,12 +13,13 @@
     }
 
     enum OrderSagaState {
-        + CREATING_ORDER
-        + DECREASING_STOCK
-        + CREATING_PAYMENT
-        + INCREASING_STOCK
-        + CANCELLING_ORDER
-        + COMPLETED
+        + START
+        + ORDER_CREATED
+        + STOCK_DECREASED
+        + PAYMENT_CREATED
+        + STOCK_INCREASED
+        + ORDER_DELETED
+        + END
     }
 
     SagaOrchestrator --> Controller

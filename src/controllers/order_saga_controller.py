@@ -20,6 +20,10 @@ class OrderSagaController(Controller):
         super().__init__()
         # NOTE: veuillez lire le commentaire de ce classe pour mieux comprendre les limitations de ce implémentation
         self.current_saga_state = OrderSagaState.START
+        self.create_order_handler = None
+        self.decrease_stock_handler = None
+        self.create_payment_handler = None
+        self.is_error_occurred = False
 
     def run(self, request):
         """ Perform steps of order saga """

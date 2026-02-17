@@ -8,6 +8,7 @@ from enum import Enum
 
 # TODO: Veuillez consulter le diagramme de machine à états pour en savoir plus
 class OrderSagaState(Enum):
+    """Collection of all possible states of an order throughout the saga"""
     START = 0
     ORDER_CREATED = 1
     STOCK_DECREASED = 2
