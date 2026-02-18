@@ -4,7 +4,6 @@ SPDX - License - Identifier: LGPL - 3.0 - or -later
 Auteurs : Gabriel C. Ullmann, Fabio Petrillo, 2025
 """
 import requests
-from logger import Logger
 from handlers.handler import Handler
 from order_saga_state import OrderSagaState
 
@@ -31,7 +30,7 @@ class CreatePaymentHandler(Handler):
             POST my-api-gateway-address/payments ...
             json={ voir collection Postman pour en savoir plus ... }
             """
-            response_ok = False
+            response_ok = True
             if response_ok:
                 self.logger.debug("Transition d'état: CreatePayment -> PAYMENT_CREATED")
                 return OrderSagaState.PAYMENT_CREATED
@@ -42,6 +41,7 @@ class CreatePaymentHandler(Handler):
             return self.rollback()
         
     def rollback(self):
+        """ Call StoreManager to restore stock quantities if payment transaction creation fails """
         # TODO: remettre en stock tous les articles qui avaient été retirés du stock (dans self.order_data)
         self.logger.debug("Transition d'état: CreatePaymentFailure -> STOCK_INCREASED")
         return OrderSagaState.STOCK_INCREASED

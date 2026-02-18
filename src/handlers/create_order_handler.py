@@ -5,7 +5,6 @@ Auteurs : Gabriel C. Ullmann, Fabio Petrillo, 2025
 """
 import config
 import requests
-from logger import Logger
 from handlers.handler import Handler
 from order_saga_state import OrderSagaState
 
@@ -42,7 +41,8 @@ class CreateOrderHandler(Handler):
         
     def rollback(self):
         """
-        Une compensation n'est pas nécessaire car la commande n'a pas été créée. Il n'y a donc rien à compenser. 
-        Cependant, nous héritons de la classe abstraite Handler, et par conséquent, l'implémentation de la méthode rollback() est obligatoire.
+        (rollback not applicable for CreateOrder)
         """
+        # Une compensation n'est pas nécessaire car la commande n'a pas été créée. Il n'y a donc rien à compenser. 
+        # Cependant, nous héritons de la classe abstraite Handler, et par conséquent, l'implémentation de la méthode rollback() est obligatoire.
         pass

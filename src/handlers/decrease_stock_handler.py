@@ -4,7 +4,6 @@ SPDX - License - Identifier: LGPL - 3.0 - or -later
 Auteurs : Gabriel C. Ullmann, Fabio Petrillo, 2025
 """
 import requests
-from logger import Logger
 from handlers.handler import Handler
 from order_saga_state import OrderSagaState
 
@@ -39,6 +38,7 @@ class DecreaseStockHandler(Handler):
             return self.rollback()
         
     def rollback(self):
+        """ Call StoreManager to delete order if stock decrease fails """
         # TODO: utilisez l'ID de la commande pour la supprimer
         self.logger.debug(f"Transition d'état: DecreaseStockFailure -> ORDER_DELETED")
         return OrderSagaState.ORDER_DELETED
