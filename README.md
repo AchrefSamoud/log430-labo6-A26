@@ -116,12 +116,12 @@ La première étape (création de la commande) étant déjà implémentée, votr
 
 ### 3. Implémentation de la création de paiement
 
-Complétez l'implémentation dans `src/handlers/create_payment_handler.py` en vous basant sur `create_order_handler.py` et `decrease_stock_handler.py`. Suivez la même logique que pour l'activité précédente.
+Complétez l'implémentation dans `src/handlers/create_payment_handler.py` en vous basant sur `create_order_handler.py` et/ou `decrease_stock_handler.py`. Suivez la même logique que pour l'activité précédente.
 
 > 💡 **Question 5** : Quel endpoint avez-vous appelé pour générer une transaction de paiement? Quelles informations de la commande avez-vous utilisées? Illustrez votre réponse avec des extraits de code.
 
 ### 4. Implémentation de la suppression de la commande
-Finalement, complétez l'implémentation dans `src/handlers/deleter_order_handler.py`. Ceci est le seul handler déclenché seulement en cas d’erreur, et il n’effectuera que la suppression des commandes. Suivez la même logique que pour l'activité précédente, mais sans vous préoccuper de la méthode de rollback, car cette transition d'état n'en a pas besoin (comme décrit dans le diagramme de machine à états).
+Finalement, complétez l'implémentation dans `src/handlers/delete_order_handler.py`. Ceci est le seul handler déclenché seulement en cas d’erreur, et il n’effectuera que la suppression des commandes. Suivez la même logique que pour l'activité précédente, mais sans vous préoccuper de la méthode de rollback, car cette transition d'état n'en a pas besoin (comme décrit dans le diagramme de machine à états).
 
 > 📝 **NOTE** : Que se passe-t-il si une opération de compensation échoue ? Dans ce labo, la réponse est simple : on passe à l'état suivant jusqu'à atteindre l'état terminal. Il n'y a pas de rollback sur les rollbacks. Dans une application plus robuste, nous envisagerons plutôt de réessayer la compensation plusieurs fois en cas d'échec, tout en conservant des logs pour faciliter le débogage.
 
