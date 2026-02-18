@@ -125,6 +125,8 @@ Finalement, complétez l'implémentation dans `src/handlers/delete_order_handler
 
 > 📝 **NOTE** : Que se passe-t-il si une opération de compensation échoue ? Dans ce labo, la réponse est simple : on passe à l'état suivant jusqu'à atteindre l'état terminal. Il n'y a pas de rollback sur les rollbacks. Dans une application plus robuste, nous envisagerons plutôt de réessayer la compensation plusieurs fois en cas d'échec, tout en conservant des logs pour faciliter le débogage.
 
+N'oubliez pas de appeler `DeleteOrderHandler` dans `src/controllers/order_saga_controller.py`. C'est le seul qui manque pour compléter la saga.
+
 ### 5. Intégration de Jaeger pour le distributed tracing
 Ajoutez Jaeger à votre `docker-compose.yml` pour permettre le tracing distribué de vos transactions Saga.
 

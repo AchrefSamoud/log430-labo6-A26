@@ -52,7 +52,7 @@ def add_order(user_id: int, items: list):
 
         order_id = new_order.id
 
-        # TODO: il faut mettre à jour le lien de paiement si la création du paiement (CREATING_PAYMENT) a réussi
+        # Il faut mettre à jour le lien de paiement si la création du paiement (CREATING_PAYMENT) a réussi
         new_order.payment_link = ""
         session.flush()  
         
@@ -73,7 +73,7 @@ def add_order(user_id: int, items: list):
         session.commit()
         logger.debug("Une commande a été ajouté")
 
-        # TODO: il faut mettre à jour le lien de paiement si la création du paiement (CREATING_PAYMENT) a réussi
+        # Il faut mettre à jour le lien de paiement si la création du paiement (CREATING_PAYMENT) a réussi
         add_order_to_redis(order_id, user_id, total_amount, items, new_order.payment_link)
         return order_id
 
