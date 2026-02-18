@@ -10,7 +10,7 @@
 - Utiliser le distributed tracing avec Jaeger pour observer et déboguer les transactions distribuées
 
 ## ⚙️ Setup
-Notre magasin a connu une croissance importante, et avec l'augmentation du volume de commandes, nous avons constaté une hausse proportionnelle du nombre d'erreurs. Lorsque le store_manager ou l'API de paiement sont indisponibles ou dysfonctionnels durant l'ajout ou la modification d'une commande, celle-ci peut se retrouver dans un état incohérent (par exemple, la commande est créée sans transaction de paiement associée, ou inversement). Pour résoudre ce type de problème, nous pouvons implémenter le patron Saga orchestré.
+Notre magasin a connu une croissance importante, et avec l'augmentation du volume de commandes, nous avons constaté une hausse proportionnelle du nombre d'erreurs. Lorsque le store_manager ou l'API de paiement sont indisponibles ou dysfonctionnels durant l'ajout ou la modification d'une commande, celle-ci peut se retrouver dans un état incohérent (par exemple, la commande est créée sans changement de stock ou transaction de paiement associée). Pour résoudre ce type de problème, nous pouvons implémenter le patron Saga orchestré.
 
 Dans ce laboratoire, nous allons implémenter un orchestrateur Saga (`saga_orchestrator`) qui coordonne les transactions distribuées entre les services `store_manager` et `payment_api`. Contrairement aux laboratoires précédents où les services communiquaient directement entre eux, l'orchestrateur Saga centralise la logique de coordination et gère les transactions complexes impliquant plusieurs services.
 
@@ -81,23 +81,36 @@ docker compose up -d
 > ⚠️ ATTENTION : même si nous utiliserons les fonctionnalités des dépôts `log430-labo5` et `log430-labo5-paiement`, nous écrirons du nouveau code principalement dans celui-ci (`labo6-saga-orchestrator`). Alors, les noms de fichiers dans les activités font toujours réference à ce dépôt (sauf l'activité 4).
 
 ### 1. Analyse du patron Saga
-Lisez attentivement le document d'architecture dans `/docs/arc42/docs.md` et examinez l'implémentation déjà présente dans trois fichiers: `src/handlers/create_order_handler.py`, `src/controllers/order_saga_controller.py` et `src/saga_orchestrator.py`.
+Lisez attentivement le document d'architecture dans `/docs/arc42/docs.md` et examinez l'implémentation déjà présente dans 3 fichiers: `src/handlers/create_order_handler.py`, `src/controllers/order_saga_controller.py` et `src/saga_orchestrator.py`.
 
 > 💡 **Question 1** : Lequel de ces fichiers Python représente la logique de la machine à états décrite dans les diagrammes du document arc42? Est-ce que son implémentation est complète ou y a-t-il des éléments qui manquent? Illustrez votre réponse avec des extraits de code.
 
-> 💡 **Question 2** : Lequel de ces fichiers Python déclenche la création ou suppression des commandes? Est-ce qu'il accède à une base de données directement pour le faire? Illustrez votre réponse avec des extraits de code.
+> 💡 **Question 2** : Est-ce que le handler `CreateOrderHandler` connecte à une base de données directement pour créer des commandes? Illustrez votre réponse avec des extraits de code.
 
-> 💡 **Question 3** : Quelle requête dans la collection Postman du Labo 05 correspond à l'endpoint appelé dans `create_order_handler.py`? Illustrez votre réponse avec des captures d'écran ou extraits de code.
+> 💡 **Question 3** : Quelle requête dans la collection Postman du Labo 05 correspond à l'endpoint appelé par `CreateOrderHandler`? Illustrez votre réponse avec des captures d'écran ou extraits de code.
+
+Ensuite, en utilisant la **collection Postman de l'Orchestrateur (pas la collection du Store Manager)**, appelez l'endpoint `/saga/order` et observez les sorties dans Docker Desktop (onglet `Logs`). Si votre Orchestrateur et votre application Store Manager ont été préparés et exécutés correctement, vous devriez voir les logs suivants :
+
+```sh
+Controller - DEBUG - État initial
+Handler - DEBUG - Transition d'état: CreateOrder -> ORDER_CREATED
+Handler - DEBUG - Transition d'état: DecreaseStock -> STOCK_DECREASED
+Handler - DEBUG - Transition d'état: CreatePayment -> PAYMENT_CREATED
+Controller - DEBUG - Transition à l'état terminal
+POST /saga/order HTTP/1.1" 200
+```
+
+Si vous comparez ces logs avec la machine à états dans le document arc42, vous allez remarquer qu'il y a une correspondance exacte. Dans un flux d'utilisation optimal, la commande passera par 3 états dans la saga avant d'atteindre l'état terminal. Dans un flux d'utilisation avec des erreurs, la commande passera également par les états de compensation (rollback). Dans les prochaines activités, nous implémenterons les transitions d'un état à l'autre, représentées par les classes `Handler`.
 
 ### 2. Implémentation de la gestion de stock
 
-La première étape (création de la commande) étant déjà implémentée, votre tâche consiste à implémenter les deux étapes suivantes de la saga. Complétez l'implémentation dans `src/handlers/decrease_stock_handler.py` en vous inspirant de `create_order_handler.py`. Voici quelques considérations importantes :
+La première étape (création de la commande) étant déjà implémentée, votre tâche consiste à implémenter les étapes suivantes de la saga. Complétez l'implémentation dans `src/handlers/decrease_stock_handler.py` en vous inspirant de `create_order_handler.py`. Voici quelques considérations importantes :
 - Les commentaires `TODO` disséminés dans le code vous guideront vers les modifications nécessaires. Si vous utilisez VS Code, cliquez sur l'icône en forme de loupe ou appuyez sur CTRL + SHIFT + F pour effectuer une recherche dans l'ensemble du projet.
 - Vous devrez appeler l'endpoint de gestion de stock du service Store Manager **via l'API Gateway (KrakenD)**. 
-- Si vous ne connaissez pas l'endpoint exact ou la méthode HTTP à utiliser (POST, GET, etc.), consultez **la collection Postman du Store Manager** pour identifier les bonnes informations. La collection est justement là pour documenter les endpoints et permettre un test rapide.
-- Pour tester l'ensemble de la saga, utilisez la **collection Postman de l'Orchestrateur (pas la collection du Store Manager)** en appelant l'endpoint `/saga/order`. 
-- En cas d'erreurs 500 avec des messages peu explicites, ajoutez des loggers dans les méthodes suspectes. Consultez la section « Astuces de débogage » pour plus de détails sur cette approche.
-- N'oubliez pas d'implémenter les deux méthodes: `run()` et `rollback()`. **Chacune de nos actions doit être réversible, et déclencher la compensation des actions précédentes**.
+- Si vous ne connaissez pas l'endpoint exact ou la méthode HTTP à utiliser (POST, GET, etc.), consultez **la collection Postman du Store Manager** pour identifier les bons paramètres. La collection est là justement pour documenter les endpoints et permettre un test rapide.
+- Pour tester l'ensemble de la saga, appelez l'endpoint `/saga/order` comme vous l'avez fait dans l'activité 1. Si vos états et transitions suivent le même ordre que celui décrit dans le diagramme de la machine à états, cela signifie qu'ils sont correctement implémentés.
+- En cas d'erreurs 500 avec des messages peu explicites, ajoutez des loggers dans les méthodes suspectes. Consultez la section [Astuces de débogage](#-astuces-de-débogage) pour plus de détails.
+- N'oubliez pas de compléter l'implémentation dans les deux méthodes: `run()` et `rollback()`. **Chacune de nos actions doit être réversible et déclencher la compensation des actions précédentes**.
 
 > 💡 **Question 4** : Quel endpoint avez-vous appelé pour modifier le stock? Quelles informations de la commande avez-vous utilisées? Illustrez votre réponse avec des extraits de code.
 
@@ -107,7 +120,12 @@ Complétez l'implémentation dans `src/handlers/create_payment_handler.py` en vo
 
 > 💡 **Question 5** : Quel endpoint avez-vous appelé pour générer une transaction de paiement? Quelles informations de la commande avez-vous utilisées? Illustrez votre réponse avec des extraits de code.
 
-### 4. Intégration de Jaeger pour le distributed tracing
+### 4. Implémentation de la suppression de la commande
+Finalement, complétez l'implémentation dans `src/handlers/deleter_order_handler.py`. Ceci est le seul handler déclenché seulement en cas d’erreur, et il n’effectuera que la suppression des commandes. Suivez la même logique que pour l'activité précédente, mais sans vous préoccuper de la méthode de rollback, car cette transition d'état n'en a pas besoin (comme décrit dans le diagramme de machine à états).
+
+> 📝 **NOTE** : Que se passe-t-il si une opération de compensation échoue ? Dans ce labo, la réponse est simple : on passe à l'état suivant jusqu'à atteindre l'état terminal. Il n'y a pas de rollback sur les rollbacks. Dans une application plus robuste, nous envisagerons plutôt de réessayer la compensation plusieurs fois en cas d'échec, tout en conservant des logs pour faciliter le débogage.
+
+### 5. Intégration de Jaeger pour le distributed tracing
 Ajoutez Jaeger à votre `docker-compose.yml` pour permettre le tracing distribué de vos transactions Saga.
 
 ```yaml
@@ -129,7 +147,8 @@ Ajoutez Jaeger à votre `docker-compose.yml` pour permettre le tracing distribu�
 ```
 
 Ensuite, configurez **tous vos microservices** (Store Manager, Payments API et Orchestrator) pour envoyer les traces à Jaeger. Dans votre code Python, vous devrez :
-#### 4.1. Ajoutez les dépendances nécessaires à votre requirements.txt
+
+#### 5.1. Ajouter les dépendances nécessaires à votre requirements.txt
 ```txt
 opentelemetry-api
 opentelemetry-sdk
@@ -138,7 +157,7 @@ opentelemetry-instrumentation-flask
 opentelemetry-instrumentation-requests
 ```
 
-#### 4.2 Configurer l'exportateur de traces vers Jaeger
+#### 5.2 Configurer l'exportateur de traces vers Jaeger
 ```python
 from opentelemetry import trace
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -174,7 +193,7 @@ RequestsInstrumentor().instrument()
 # Ensuite, le code pour vos endpoints Flask, etc...
 ``` 
 
-#### 4.3. Modifiez votre configuration KrakenD pour reconnaître la spécification OpenTelemetry (utilisé par Jaeger)
+#### 5.3. Modifiez votre configuration KrakenD pour reconnaître la spécification OpenTelemetry (utilisé par Jaeger)
 ```yml
  "port": 8080,
  "extra_config": {
@@ -195,7 +214,7 @@ RequestsInstrumentor().instrument()
  }
 ```
 
-#### 4.4. Modifiez chacun de vos endpoints KrakenD pour laisser passer les traces à Jaeger dans les headers HTTP
+#### 5.4. Modifiez chacun de vos endpoints KrakenD pour laisser passer les traces à Jaeger dans les headers HTTP
 Par exemple:
 ```yml
     {
@@ -205,7 +224,7 @@ Par exemple:
     }
 ```
 
-#### 4.5. Instrumenter vos endpoints avec des [spans](https://logit.io/docs/application-performance-monitoring/jaeger/span-types/#python-example)
+#### 5.5. Instrumenter vos endpoints avec des [spans](https://logit.io/docs/application-performance-monitoring/jaeger/span-types/#python-example)
 
 ```python
 @app.route("/some-endpoint", methods=["POST"])
@@ -221,7 +240,7 @@ Par example, vous pour tracer le début de la saga, vous pouvez ajouter l'objet 
 
 Accédez à l'interface Jaeger à `http://localhost:16686` et observez les traces de vos transactions distribuées. Voici une [petite démonstration](http://youtube.com/watch?v=wSgCCmu7eTY) de l'interface dans le navigateur.
 
-### 5. Test de la transaction Saga complète
+### 6. Test de la transaction Saga complète
 Utilisez Postman pour tester votre orchestrateur Saga :
 1. Importez la nouvelle collection Postman disponible dans `docs/collections`
 2. Créez une transaction complète via l'orchestrateur Saga
@@ -230,7 +249,7 @@ Utilisez Postman pour tester votre orchestrateur Saga :
 
 > 💡 **Question 6** : Quelle est la différence entre appeler l'orchestrateur Saga et appeler directement les endpoints des services individuels? Quels sont les avantages et inconvénients de chaque approche? Illustrez votre réponse avec des captures d'écran ou extraits de code.
 
-### 6. Gestion des échecs et compensation
+### 7. Gestion des échecs et compensation
 Testez le comportement de votre orchestrateur Saga en cas d'échec :
 1. Arrêtez le service Payment API
 2. Essayez de créer une commande via l'orchestrateur Saga
@@ -238,9 +257,10 @@ Testez le comportement de votre orchestrateur Saga en cas d'échec :
 
 ## 🔍 Astuces de débogage
 
-- **Ajoutez des loggers** : Lorsqu'une erreur n'est pas claire, ajoutez `logger.debug()` dans votre code
+- **Utilisez des logs** : Utilisez les logs déjà intégrés au code pour comprendre son fonctionnement. Lorsqu'une erreur n'est pas claire, ajoutez un `logger.debug()` de plus dans votre code, redémarrez le conteneur et réessayez.
 - **Déboguez en profondeur** : Si un logger dans un module ne vous aide pas, descendez plus profondément dans le code, dans les fonctions internes. Si ça n'aide pas, remontez dans la call stack (ex. vérifiez la méthode qui appelle votre méthode, et ainsi de suite).
 - **Utilisez Docker Desktop** : Utilisez l'interface Docker Desktop pour visualiser les logs.
+- **Observez le diagramme de machine à états** : Le diagramme vous sert de référence pour comprendre comment la saga doit passer d'un état à l'autre. Si votre implémentation de l'orchestrateur est correcte, elle ne devrait jamais se bloquer dans une boucle infinie ni recevoir d'états invalides.
 - **Utilisez Postman** : Postman nous permet de vérifier chaque endpoint de manière individuelle et rapide, sans écrire aucun code. N'oubliez pas de faire les requêtes seulement à `localhost` à partir de Postman, parce qu'il est hors Docker (il ne connaît pas les hostnames). 
 - **Utilisez Jaeger** : Utilisez l'interface Jaeger pour visualiser où exactement une transaction échoue.
 

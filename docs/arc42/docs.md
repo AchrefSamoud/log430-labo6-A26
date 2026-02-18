@@ -35,6 +35,7 @@ Fonctionnalités principales :
 
 ### Contexte métier
 ![State Machine](state_machine.png)
+
 L'orchestrateur saga coordonne le processus de création de commande (Order Saga) qui implique :
 1. Création de la commande dans le Store Manager
 2. Gestion du stock pour les articles commandés
@@ -66,7 +67,7 @@ L'orchestrateur saga coordonne le processus de création de commande (Order Saga
 ![Deployment](deployment.png)
 
 ## 8. Concepts transversaux
-Patron Saga, Machine à états
+Patron Saga avec orchestration, machine à états (automate fini).
 
 ## 9. Décisions d'architecture
 Veuillez consulter le fichier `/docs/adr/adr001.md`.
@@ -89,8 +90,10 @@ Veuillez consulter le fichier `/docs/adr/adr001.md`.
 
 | Risque | Impact | Stratégie de mitigation |
 |--------|--------|------------------------|
-| **Point de défaillance unique** | Si l'orchestrateur cesse de fonctionner, il devient impossible de créer des commandes, même si le Store Manager et le Payments API continuent de fonctionner | Coupler l'orchestrateur avec le Store Manager, ou utiliser une saga chorégraphiée (nous allons faire ça dans le labo 8) |
-| **Absence de mécanisme de retry** | Échec définitif en cas d'erreur temporaire, car l'état de la machine à états n'est conservé qu'en mémoire | Implémenter une logique de persistence de l'état actuel de l'instance de l'orchestrateur pour permettre un retry automatique (nous n'allons pas implémenter ça dans ce labo, mais c'est une amélioration à considérer pour le futur) |
+| **Point de défaillance unique** | Si l'orchestrateur cesse de fonctionner, il devient impossible de créer des commandes, même si le Store Manager et l'API de paiement continuent de fonctionner. | Coupler l'orchestrateur avec le Store Manager, ou adopter une saga chorégraphiée (cette approche sera abordée dans le laboratoire 8). |
+| **Absence de persistance de l'état en cas de plantage** | En cas de plantage, l'état des commandes dans la saga est perdu, car il n'est conservé qu'en mémoire, entraînant un échec définitif et irrécupérable. | Implémenter un mécanisme de persistance de l'état dans l'orchestrateur afin de permettre un retry automatique à partir du dernier état valide connu au redémarrage (amélioration non couverte dans ce laboratoire, mais à considérer pour une implémentation future). |
+| **Absence de mécanisme de retry lors de la compensation** | En cas d'échec lors de la compensation, aucun mécanisme ne permet de relancer l'opération. Le processus passe simplement à l'étape de compensation suivante jusqu'à atteindre l'état terminal. Cela peut entraîner des incohérences, par exemple dans les données de stock ou de commandes. | Implémenter un mécanisme de retry et de logs en cas d'échec de la compensation (amélioration non couverte dans ce laboratoire, mais à considérer pour une implémentation future). |
+
 
 ## 12. Glossaire
 
