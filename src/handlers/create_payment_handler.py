@@ -4,7 +4,6 @@ SPDX - License - Identifier: LGPL - 3.0 - or -later
 Auteurs : Gabriel C. Ullmann, Fabio Petrillo, 2025
 """
 import requests
-from logger import Logger
 from handlers.handler import Handler
 from order_saga_state import OrderSagaState
 
@@ -33,18 +32,16 @@ class CreatePaymentHandler(Handler):
             """
             response_ok = True
             if response_ok:
-                self.logger.debug("La création d'une transaction de paiement a réussi")
-                return OrderSagaState.COMPLETED
+                self.logger.debug("Transition d'état: CreatePayment -> PAYMENT_CREATED")
+                return OrderSagaState.PAYMENT_CREATED
             else:
-                self.logger.error(f"Erreur : {response_ok}")
-                return OrderSagaState.INCREASING_STOCK
+                return self.rollback()
 
-        except Exception as e:
-            self.logger.error("La création d'une transaction de paiement a échoué : " + str(e))
-            return OrderSagaState.INCREASING_STOCK
+        except Exception:
+            return self.rollback()
         
     def rollback(self):
-        """Call payment microservice to delete payment transaction"""
-        # ATTENTION: Nous pourrions utiliser cette méthode si nous avions des étapes supplémentaires, mais ce n'est pas le cas actuellement, elle restera donc INUTILISÉE.
-        self.logger.debug("La suppression d'une transaction de paiement a réussi")
-        return OrderSagaState.INCREASING_STOCK
+        """ Call StoreManager to restore stock quantities if payment transaction creation fails """
+        # TODO: remettre en stock tous les articles qui avaient été retirés du stock (dans self.order_data)
+        self.logger.debug("Transition d'état: CreatePaymentFailure -> STOCK_INCREASED")
+        return OrderSagaState.STOCK_INCREASED

@@ -20,5 +20,5 @@ class Handler(ABC):
 
     @abstractmethod
     def rollback(self):
-        """ Revert the effects of the operation executed by the run method"""
+        """ Trigger the rollback of ALL previous operations """
         pass
