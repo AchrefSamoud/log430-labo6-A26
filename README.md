@@ -78,7 +78,7 @@ docker compose up -d
 
 ## 🧪 Activités pratiques
 
-> ⚠️ ATTENTION : même si nous utiliserons les fonctionnalités des dépôts `log430-labo5` et `log430-labo5-paiement`, nous écrirons du nouveau code principalement dans celui-ci (`labo6-saga-orchestrator`). Alors, les noms de fichiers dans les activités font toujours réference à ce dépôt (sauf l'activité 4).
+> ⚠️ **ATTENTION*** : même si nous utiliserons les fonctionnalités des dépôts `log430-labo5` et `log430-labo5-paiement`, nous écrirons du nouveau code principalement dans celui-ci (`labo6-saga-orchestrator`). Alors, les noms de fichiers dans les activités font toujours référence à ce dépôt (sauf l'activité 4).
 
 ### 1. Analyse du patron Saga
 Lisez attentivement le document d'architecture dans `/docs/arc42/docs.md` et examinez l'implémentation déjà présente dans 3 fichiers: `src/handlers/create_order_handler.py`, `src/controllers/order_saga_controller.py` et `src/saga_orchestrator.py`.
@@ -125,7 +125,7 @@ Finalement, complétez l'implémentation dans `src/handlers/delete_order_handler
 
 > 📝 **NOTE** : Que se passe-t-il si une opération de compensation échoue ? Dans ce labo, la réponse est simple : on passe à l'état suivant jusqu'à atteindre l'état terminal. Il n'y a pas de rollback sur les rollbacks. Dans une application plus robuste, nous envisagerons plutôt de réessayer la compensation plusieurs fois en cas d'échec, tout en conservant des logs pour faciliter le débogage.
 
-N'oubliez pas de appeler `DeleteOrderHandler` dans `src/controllers/order_saga_controller.py`. C'est le seul qui manque pour compléter la saga.
+N'oubliez pas d'appeler `DeleteOrderHandler` dans `src/controllers/order_saga_controller.py`. C'est le seul qui manque pour compléter la saga.
 
 ### 5. Intégration de Jaeger pour le distributed tracing
 Ajoutez Jaeger à votre `docker-compose.yml` pour permettre le tracing distribué de vos transactions Saga.
@@ -236,7 +236,7 @@ def post_something():
     return jsonify({'data': 'les-données-que-vous-voulez-retourner'})
 ```
 
-Par example, vous pour tracer le début de la saga, vous pouvez ajouter l'objet `tracer` à l'endpoint `POST /saga/order` dans l'orchestrateur et, ensuite, dans l'endpoint `POST /orders` du Store Manager. N'oubliez pas de faire le setup à Jaeger dans **chaque** application oú vous voulez utiliser Jaeger.
+Par exemple, pour tracer le début de la saga, vous pouvez ajouter l'objet `tracer` à l'endpoint `POST /saga/order` dans l'orchestrateur et, ensuite, dans l'endpoint `POST /orders` du Store Manager. N'oubliez pas de faire le setup à Jaeger dans **chaque** application où vous voulez utiliser Jaeger.
 
 **Reconstruisez et redémarrez** tous les conteneurs Docker.
 
