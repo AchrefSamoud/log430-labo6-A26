@@ -78,7 +78,7 @@ docker compose up -d
 
 ## 🧪 Activités pratiques
 
-> ⚠️ **ATTENTION*** : même si nous utiliserons les fonctionnalités des dépôts `log430-labo5` et `log430-labo5-paiement`, nous écrirons du nouveau code principalement dans celui-ci (`labo6-saga-orchestrator`). Alors, les noms de fichiers dans les activités font toujours référence à ce dépôt (sauf l'activité 4).
+> ⚠️ **ATTENTION** : même si nous utiliserons les fonctionnalités des dépôts `log430-labo5` et `log430-labo5-paiement`, nous écrirons du nouveau code principalement dans celui-ci (`labo6-saga-orchestrator`). Alors, les noms de fichiers dans les activités font toujours référence à ce dépôt (sauf l'activité 4).
 
 ### 1. Analyse du patron Saga
 Lisez attentivement le document d'architecture dans `/docs/arc42/docs.md` et examinez l'implémentation déjà présente dans 3 fichiers: `src/handlers/create_order_handler.py`, `src/controllers/order_saga_controller.py` et `src/saga_orchestrator.py`.
@@ -259,9 +259,8 @@ Testez le comportement de votre orchestrateur Saga en cas d'échec :
 
 ## 🔍 Astuces de débogage
 
-- **Utilisez des logs** : Utilisez les logs déjà intégrés au code pour comprendre son fonctionnement. Lorsqu'une erreur n'est pas claire, ajoutez un `logger.debug()` de plus dans votre code, redémarrez le conteneur et réessayez.
+- **Utilisez des logs** : Utilisez les logs déjà intégrés au code pour comprendre son fonctionnement. Observez la sortie du terminal sur Postman et Docker Desktop. Lorsqu'une erreur n'est pas claire, ajoutez un `logger.debug()` de plus dans votre code, redémarrez le conteneur et réessayez.
 - **Déboguez en profondeur** : Si un logger dans un module ne vous aide pas, descendez plus profondément dans le code, dans les fonctions internes. Si ça n'aide pas, remontez dans la call stack (ex. vérifiez la méthode qui appelle votre méthode, et ainsi de suite).
-- **Utilisez Docker Desktop** : Utilisez l'interface Docker Desktop pour visualiser les logs.
 - **Observez le diagramme de machine à états** : Le diagramme vous sert de référence pour comprendre comment la saga doit passer d'un état à l'autre. Si votre implémentation de l'orchestrateur est correcte, elle ne devrait jamais se bloquer dans une boucle infinie ni recevoir d'états invalides.
 - **Utilisez Postman** : Postman nous permet de vérifier chaque endpoint de manière individuelle et rapide, sans écrire aucun code. N'oubliez pas de faire les requêtes seulement à `localhost` à partir de Postman, parce qu'il est hors Docker (il ne connaît pas les hostnames). 
 - **Utilisez Jaeger** : Utilisez l'interface Jaeger pour visualiser où exactement une transaction échoue.
