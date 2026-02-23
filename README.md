@@ -91,7 +91,7 @@ Lisez attentivement le document d'architecture dans `/docs/arc42/docs.md` et exa
 
 Ensuite, en utilisant la **collection Postman de l'Orchestrateur (pas la collection du Store Manager)**, appelez l'endpoint `/saga/order` et observez les sorties dans Docker Desktop (onglet `Logs`). Si votre Orchestrateur et votre application Store Manager ont été préparés et exécutés correctement, vous devriez voir les logs suivants :
 
-```sh
+```txt
 Controller - DEBUG - État initial
 Handler - DEBUG - Transition d'état: CreateOrder -> ORDER_CREATED
 Handler - DEBUG - Transition d'état: DecreaseStock -> STOCK_DECREASED
