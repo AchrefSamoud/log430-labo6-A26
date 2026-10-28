@@ -267,5 +267,19 @@ Testez le comportement de votre orchestrateur Saga en cas d'échec :
 
 ## 📦 Livrables
 
-- Un fichier .zip contenant l'intégralité du code source du projet Labo 06
-- Un rapport en .pdf répondant à toutes les questions présentées dans ce document. Il est **obligatoire** d'illustrer vos réponses avec du code et des captures d'écran
+> ⚠️ **La remise se fait au niveau de la PHASE, pas du labo.** Les Labos 06, 07, 08 et 09 forment la **Phase 3**, remise en une seule fois dans un espace Moodle unique, à la fin de la phase.
+
+Vous déposerez **exactement deux fichiers** dans Moodle, pour toute la Phase 3 :
+
+| # | Fichier | Contenu |
+|---|---|---|
+| 1 | `LOG430-A26-Phase3-EquipeNN.zip` | Le code source des **4 labos**, un dossier par labo (`labo06/`, `labo07/`, `labo08/`, `labo09/`) |
+| 2 | `LOG430-A26-Phase3-EquipeNN.pdf` | Un **rapport unique** en 4 sections, une par labo |
+
+> ⚠️ Le rapport PDF doit être déposé **comme fichier séparé**, et non à l'intérieur du zip.
+
+Ce que **ce labo** doit contenir dans la remise :
+
+- Son code source complet, dans le dossier `labo06/` du zip.
+- La section correspondante du rapport, répondant aux **6 questions** de ce fichier. Il est **obligatoire** d'illustrer chaque réponse avec du code ou une sortie de terminal.
+
